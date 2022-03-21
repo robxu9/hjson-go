@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"encoding/json"
 )
 
 type hjsonParser struct {
@@ -480,7 +481,16 @@ func Unmarshal(data []byte, v interface{}) (err error) {
 			err = fmt.Errorf("%v", e)
 		}
 	}()
-	rv.Set(reflect.ValueOf(value))
+	rv2:=reflect.ValueOf(value)
+	if rv2.Type().AssignableTo(rv.Type()){
+		rv.Set(reflect.ValueOf(value))
+		return err
+	}
+	b,err:=json.Marshal(value)
+	if err!=nil{
+		return err
+	}
+	err = json.Unmarshal(b,v)
 	return err
 }
 
