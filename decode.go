@@ -519,16 +519,46 @@ func (p *hjsonParser) rootValueWithTrail() (interface{}, error) {
 	return res, err
 }
 
-// UnmarshalPartially try to partially parse the Hjson-encoded data,
-// return the value and the start position of unprocessed parts.
-func UnmarshalPartially(data []byte) (v interface{}, next int, err error) {
+// UnmarshalPartial parses the Hjson-encoded data and stores the result
+// in the value pointed to by v.
+//
+// Unmarshal uses the inverse of the encodings that
+// Marshal uses, allocating maps, slices, and pointers as necessary.
+//
+// Unlike Unmarshal, UnmarshalPartial can decode a Hjson document that may
+// have extraneous data at the end. It returns the index where the document ended.
+func UnmarshalPartial(data []byte, v interface{}) (next int, err error) {
+	var value interface{}
 	parser := &hjsonParser{data, 0, ' '}
 	parser.resetAt()
 
-	v, err = parser.rootValueWithTrail()
+	value, err = parser.rootValueWithTrail()
 	if err != nil {
 		return
 	}
 	next = parser.at + 1
-	return
+
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Ptr || rv.IsNil() {
+		return next, fmt.Errorf("non-pointer %v", reflect.TypeOf(v))
+	}
+	for rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+	}
+	defer func() {
+		if e := recover(); e != nil {
+			err = fmt.Errorf("%v", e)
+		}
+	}()
+	rv2 := reflect.ValueOf(value)
+	if rv2.Type().AssignableTo(rv.Type()) {
+		rv.Set(reflect.ValueOf(value))
+		return next, err
+	}
+	b, err := json.Marshal(value)
+	if err != nil {
+		return next, err
+	}
+	err = json.Unmarshal(b, v)
+	return next, err
 }

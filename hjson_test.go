@@ -116,7 +116,7 @@ func TestNilValue(t *testing.T) {
 	}
 }
 
-func TestUnmarshalPartially(t *testing.T) {
+func TestUnmarshalPartial(t *testing.T) {
 	var src = `
 	{
 		database:
@@ -127,7 +127,8 @@ func TestUnmarshalPartially(t *testing.T) {
 	  }
 	@@there is sth cannot be parsed as hijson.
 	`
-	v, next, err := UnmarshalPartially([]byte(src))
+	v := map[string]interface{}{}
+	next, err := UnmarshalPartial([]byte(src), &v)
 	if err != nil {
 		panic(err)
 	}
@@ -137,11 +138,7 @@ func TestUnmarshalPartially(t *testing.T) {
 	if v == nil {
 		panic("v is nil")
 	}
-	val, ok := v.(map[string]interface{})
-	if !ok {
-		panic("v has wrong type")
-	}
-	_, ok = val["database"]
+	_, ok := v["database"]
 	if !ok {
 		panic("v has wrong value")
 	}
