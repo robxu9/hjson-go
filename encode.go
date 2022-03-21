@@ -219,8 +219,7 @@ func (e *hjsonEncoder) str(value reflect.Value, noIndent bool, separator string,
 			e.WriteString("null")
 			return nil
 		}
-		value = value.Elem()
-		kind = value.Kind()
+		return e.str(value.Elem(),noIndent,separator,isRootObject)
 	}
 
 	if value.Type().Implements(marshalerJSON) {
