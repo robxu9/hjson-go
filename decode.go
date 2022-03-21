@@ -2,10 +2,10 @@ package hjson
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
-	"encoding/json"
 )
 
 type hjsonParser struct {
@@ -115,7 +115,7 @@ func (p *hjsonParser) readString(allowML bool) (string, error) {
 				// Escaped line feed is ignored (line continuation is allowed).
 			} else if p.ch == '\r' && p.peek(0) == '\n' {
 				// Escaped line feed is ignored (line continuation is allowed).
-				p.next();
+				p.next()
 			} else if ech, ok := escapee[p.ch]; ok {
 				res.WriteByte(ech)
 			} else {
@@ -481,16 +481,16 @@ func Unmarshal(data []byte, v interface{}) (err error) {
 			err = fmt.Errorf("%v", e)
 		}
 	}()
-	rv2:=reflect.ValueOf(value)
-	if rv2.Type().AssignableTo(rv.Type()){
+	rv2 := reflect.ValueOf(value)
+	if rv2.Type().AssignableTo(rv.Type()) {
 		rv.Set(reflect.ValueOf(value))
 		return err
 	}
-	b,err:=json.Marshal(value)
-	if err!=nil{
+	b, err := json.Marshal(value)
+	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(b,v)
+	err = json.Unmarshal(b, v)
 	return err
 }
 

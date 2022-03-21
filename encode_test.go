@@ -1,9 +1,9 @@
 package hjson
 
 import (
+	"net"
 	"reflect"
 	"testing"
-	"net"
 )
 
 type TestStruct struct {
@@ -170,9 +170,9 @@ func TestEncodeMarshalText(t *testing.T) {
 }
 
 func TestEncodeSliceOfPtrOfPtrOfString(t *testing.T) {
-	s:="1"
-	s1:=&s
-	input:=[]**string{&s1}
+	s := "1"
+	s1 := &s
+	input := []**string{&s1}
 	buf, err := Marshal(input)
 	if err != nil {
 		t.Error(err)
